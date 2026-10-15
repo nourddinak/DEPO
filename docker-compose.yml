@@ -1,0 +1,29 @@
+services:
+  depo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: depo:latest
+    container_name: depo
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - depo_data:/var/lib/depo
+    environment:
+      - PORT=8080
+      - DEPO_DATA_DIR=/var/lib/depo
+      - DEPO_EXTERNAL_URL=${DEPO_EXTERNAL_URL:-http://localhost:8080}
+      # Optional: set an explicit 32-byte (64 hex char) secret or let DEPO auto-generate master.key
+      # - DEPO_SECRET_KEY=
+      # - DEPO_WEBHOOK_SECRET=
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/auth/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  depo_data:
+    driver: local

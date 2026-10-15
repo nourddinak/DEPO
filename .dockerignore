@@ -1,0 +1,15 @@
+.git
+.github
+bin/
+data/
+*.db
+*.db-journal
+*.db-wal
+*.key
+*.exe
+*.exe~
+*.log
+web/node_modules/
+web/dist/
+.DS_Store
+Thumbs.db

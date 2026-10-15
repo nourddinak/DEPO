@@ -1,0 +1,18 @@
+[Unit]
+Description=DEPO Deployment Agent Worker
+After=network.target network-online.target caddy.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=www-data
+ExecStart=/usr/local/bin/depo-agent run --config /etc/depo-agent/config.json
+Restart=always
+RestartSec=5s
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

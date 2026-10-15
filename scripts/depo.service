@@ -1,0 +1,19 @@
+[Unit]
+Description=DEPO Central Control Plane API & Dashboard
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/depo
+ExecStart=/usr/local/bin/depo --data /var/lib/depo --port 8080
+Restart=always
+RestartSec=5s
+LimitNOFILE=65536
+Environment="DEPO_DATA_DIR=/var/lib/depo"
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

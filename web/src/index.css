@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-page: #fafafa;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f4f4f5;
+  --border-card: #e4e4e7;
+  --border-strong: #18181b;
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --text-faint: #a1a1aa;
+  --accent-black: #000000;
+  --accent-blue: #0070f3;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Vercel Cards */
+.vercel-card {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vercel-card-hover:hover {
+  border-color: #a1a1aa;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Vercel Buttons */
+.btn-vercel-primary {
+  background: #000000;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.25rem;
+  border-radius: 6px;
+  padding: 7px 14px;
+  border: 1px solid #000000;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-vercel-primary:hover:not(:disabled) {
+  background: #27272a;
+  border-color: #27272a;
+}
+
+.btn-vercel-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-vercel-secondary {
+  background: #ffffff;
+  color: #18181b;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.25rem;
+  border-radius: 6px;
+  padding: 7px 14px;
+  border: 1px solid #e4e4e7;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-vercel-secondary:hover:not(:disabled) {
+  background: #f4f4f5;
+  border-color: #d4d4d8;
+  color: #000000;
+}
+
+.btn-vercel-danger {
+  background: #fff;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-vercel-danger:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Vercel Inputs */
+.vercel-input {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #09090b;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vercel-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 1px #000000;
+}
+
+.vercel-input::placeholder {
+  color: #a1a1aa;
+}
+
+/* Vercel Pills / Status Badges */
+.badge-ready {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-building {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.badge-queued {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+/* Terminal Console Window */
+.terminal-window {
+  font-family: 'Geist Mono', monospace;
+  background: #000000;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  color: #f4f4f5;
+}
+
+/* Aliases for universal compatibility */
+.depo-card {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.depo-card-hover:hover {
+  border-color: #a1a1aa;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.depo-btn-primary {
+  background: #000000;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.25rem;
+  border-radius: 6px;
+  padding: 7px 14px;
+  border: 1px solid #000000;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.depo-btn-primary:hover:not(:disabled) {
+  background: #27272a;
+  border-color: #27272a;
+}
+
+.depo-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.depo-btn-secondary {
+  background: #ffffff;
+  color: #18181b;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.25rem;
+  border-radius: 6px;
+  padding: 7px 14px;
+  border: 1px solid #e4e4e7;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.depo-btn-secondary:hover:not(:disabled) {
+  background: #f4f4f5;
+  border-color: #d4d4d8;
+  color: #000000;
+}
+
+.depo-input {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #09090b;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.depo-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 1px #000000;
+}
+
+.depo-input::placeholder {
+  color: #a1a1aa;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

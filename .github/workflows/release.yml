@@ -1,0 +1,131 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build frontend SPA
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+          rm -rf ../cmd/depo/dist
+          cp -r dist ../cmd/depo/dist
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          check-latest: true
+
+      - name: Compile multi-platform binaries
+        run: |
+          mkdir -p dist_release
+          
+          PLATFORMS=(
+            "linux/amd64/depo-linux-amd64"
+            "linux/arm64/depo-linux-arm64"
+            "darwin/amd64/depo-darwin-amd64"
+            "darwin/arm64/depo-darwin-arm64"
+            "windows/amd64/depo-windows-amd64.exe"
+          )
+
+          for PLATFORM in "${PLATFORMS[@]}"; do
+            IFS="/" read -r OS ARCH OUTPUT <<< "$PLATFORM"
+            echo "Compiling $OUTPUT for $OS/$ARCH..."
+            CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build -ldflags="-s -w -X main.Version=${{ github.ref_name }}" -o "dist_release/$OUTPUT" ./cmd/depo
+          done
+
+          AGENT_PLATFORMS=(
+            "linux/amd64/depo-agent-linux-amd64"
+            "linux/arm64/depo-agent-linux-arm64"
+            "darwin/amd64/depo-agent-darwin-amd64"
+            "darwin/arm64/depo-agent-darwin-arm64"
+            "windows/amd64/depo-agent-windows-amd64.exe"
+          )
+
+          for PLATFORM in "${AGENT_PLATFORMS[@]}"; do
+            IFS="/" read -r OS ARCH OUTPUT <<< "$PLATFORM"
+            echo "Compiling $OUTPUT for $OS/$ARCH..."
+            CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build -ldflags="-s -w -X main.Version=${{ github.ref_name }}" -o "dist_release/$OUTPUT" ./cmd/depo-agent
+          done
+
+      - name: Generate Checksums
+        working-directory: dist_release
+        run: |
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist_release/*
+            scripts/install.sh
+            scripts/install-agent.sh
+            docker-compose.yml
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+  docker-image:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=edge,branch=main
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
