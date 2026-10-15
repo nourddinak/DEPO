@@ -6,15 +6,15 @@ set -euo pipefail
 # Installs the DEPO control plane binary, data directory, and systemd service.
 #
 # Usage:
-#   curl -sSL https://raw.githubusercontent.com/<user>/depo/main/scripts/install.sh | sudo bash
-#   curl -sSL https://raw.githubusercontent.com/<user>/depo/main/scripts/install.sh | sudo bash -s -- --port 8080 --domain depo.example.com
+#   curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/install.sh | sudo bash
+#   curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/install.sh | sudo bash -s -- --port 8080 --domain depo.example.com
 # ==============================================================================
 
 PORT="8080"
 DATA_DIR="/var/lib/depo"
 DOMAIN=""
 VERSION="latest"
-GITHUB_REPO="depo-platform/depo"
+GITHUB_REPO="nourddinak/DEPO"
 INSTALL_BIN="/usr/local/bin/depo"
 SERVICE_NAME="depo"
 
@@ -101,19 +101,40 @@ else
   fi
 
   echo "Fetching release binary: $RELEASE_URL"
-  if curl -sSL -f -o "$INSTALL_BIN" "$RELEASE_URL"; then
-    echo "Successfully downloaded depo binary."
+  if curl -sSL -f -o "$INSTALL_BIN" "$RELEASE_URL" 2>/dev/null; then
+    echo "Successfully downloaded depo release binary."
   else
-    # Strategy C: If Go is installed locally, attempt build as fallback
-    if command -v go &>/dev/null && [[ -f "./cmd/depo/main.go" ]]; then
-      echo "Compiling depo from source..."
+    # Strategy C: Check if running inside cloned repo
+    if [[ -f "./cmd/depo/main.go" ]] && command -v go &>/dev/null; then
+      echo "Compiling depo from local source..."
       CGO_ENABLED=0 go build -ldflags="-s -w" -o "$INSTALL_BIN" ./cmd/depo
     else
-      echo "Notice: Could not download pre-compiled binary from GitHub release yet."
-      echo "If you are running from the source checkout, run: go build -o /usr/local/bin/depo ./cmd/depo"
-      if [[ ! -f "$INSTALL_BIN" ]]; then
-        exit 1
+      # Strategy D: Build from GitHub source checkout
+      echo "Pre-compiled release binary not found. Building depo directly from GitHub source..."
+      BUILD_DIR=$(mktemp -d /tmp/depo-build.XXXXXX)
+
+      if ! command -v git &>/dev/null; then
+        apt-get update -qq && apt-get install -y -qq git
       fi
+
+      echo "Cloning https://github.com/${GITHUB_REPO}.git..."
+      git clone --depth 1 "https://github.com/${GITHUB_REPO}.git" "$BUILD_DIR"
+
+      if ! command -v go &>/dev/null; then
+        echo "Installing Go compiler..."
+        apt-get update -qq && apt-get install -y -qq golang-go || true
+        if ! command -v go &>/dev/null; then
+          GO_TARBALL_URL="https://go.dev/dl/go1.24.0.linux-${BIN_ARCH}.tar.gz"
+          echo "Downloading official Go compiler from $GO_TARBALL_URL..."
+          curl -sSL "$GO_TARBALL_URL" | tar -C /usr/local -xz
+          export PATH="/usr/local/go/bin:$PATH"
+        fi
+      fi
+
+      echo "Compiling depo single unified binary..."
+      (cd "$BUILD_DIR" && CGO_ENABLED=0 go build -ldflags="-s -w" -o "$INSTALL_BIN" ./cmd/depo)
+      rm -rf "$BUILD_DIR"
+      echo "Successfully compiled and installed depo binary."
     fi
   fi
 fi

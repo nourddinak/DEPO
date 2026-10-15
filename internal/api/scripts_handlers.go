@@ -87,6 +87,6 @@ func (s *Server) handleAgentDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. Fallback: redirect to GitHub release asset
-	githubReleaseURL := fmt.Sprintf("https://github.com/depo-platform/depo/releases/latest/download/%s", name)
+	githubReleaseURL := fmt.Sprintf("https://github.com/nourddinak/DEPO/releases/latest/download/%s", name)
 	http.Redirect(w, r, githubReleaseURL, http.StatusFound)
 }

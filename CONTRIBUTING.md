@@ -36,8 +36,8 @@ DEPO is structured into three primary subsystems:
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/depo-platform/depo.git
-cd depo
+git clone https://github.com/nourddinak/DEPO.git
+cd DEPO
 ```
 
 ### 2. Run Backend in Development

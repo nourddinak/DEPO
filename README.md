@@ -79,16 +79,16 @@ Choose the deployment method that fits your infrastructure best:
 Run this command on any fresh Ubuntu/Debian VPS (x86_64 or ARM64):
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/install.sh | sudo bash
 ```
 
 To configure custom ports or enable automated Caddy reverse proxy with SSL:
 ```bash
-curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/install.sh | sudo bash -s -- --port 8080 --domain depo.example.com
+curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/install.sh | sudo bash -s -- --port 8080 --domain depo.example.com
 ```
 
 The script will:
-1. Detect architecture (`amd64` / `arm64`) and download the latest release binary.
+1. Detect architecture (`amd64` / `arm64`) and download the release binary (or automatically build from source if release is pending).
 2. Initialize `/var/lib/depo` for SQLite storage and encrypted master keys.
 3. Install and start the `depo.service` systemd daemon.
 4. Optionally configure Caddy to provide instant automatic HTTPS.
@@ -101,7 +101,7 @@ For containerized environments:
 
 1. Clone or download `docker-compose.yml`:
 ```bash
-curl -sSL -O https://raw.githubusercontent.com/depo-platform/depo/main/docker-compose.yml
+curl -sSL -O https://raw.githubusercontent.com/nourddinak/DEPO/main/docker-compose.yml
 ```
 
 2. Start the container in detached mode:
@@ -125,8 +125,8 @@ Prerequisites: Go 1.24+ and Node 22+ (only required if building frontend from so
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/depo-platform/depo.git
-cd depo
+git clone https://github.com/nourddinak/DEPO.git
+cd DEPO
 
 # 2. Build the control plane (pre-built frontend assets are included in cmd/depo/dist)
 CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/depo ./cmd/depo
@@ -237,11 +237,11 @@ DEPO provides automated, clean uninstaller scripts for both the central control 
 ### 1. Uninstall Central Server
 To remove the DEPO control plane service and binary from your VPS:
 ```bash
-curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/uninstall.sh | sudo bash
 ```
 To also permanently delete all SQLite databases, encryption keys, and artifacts located in `/var/lib/depo`:
 ```bash
-curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall.sh | sudo bash -s -- --purge-data
+curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/uninstall.sh | sudo bash -s -- --purge-data
 ```
 
 ### 2. Uninstall VPS Edge Agent
@@ -251,7 +251,7 @@ To completely remove the agent daemon, credentials, and systemd service from a t
 curl -sSL https://depo.example.com/uninstall-agent.sh | sudo bash
 
 # Or directly from the GitHub repository:
-curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall-agent.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/uninstall-agent.sh | sudo bash
 ```
 To also purge all deployed static website releases located in `/var/www`:
 ```bash

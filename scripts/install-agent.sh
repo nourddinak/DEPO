@@ -85,15 +85,33 @@ esac
 
 # Download binary from central server if available, or fetch release
 DOWNLOAD_URL="${SERVER_URL}/downloads/depo-agent-linux-${AGENT_ARCH}"
-if curl -sSL -f -o "$INSTALL_BIN" "$DOWNLOAD_URL"; then
+if curl -sSL -f -o "$INSTALL_BIN" "$DOWNLOAD_URL" 2>/dev/null; then
   echo "Downloaded agent binary from central server."
 else
   echo "Downloading agent from release assets..."
-  GITHUB_RELEASE_URL="https://github.com/depo-platform/depo/releases/latest/download/depo-agent-linux-${AGENT_ARCH}"
-  if curl -sSL -f -o "$INSTALL_BIN" "$GITHUB_RELEASE_URL"; then
+  GITHUB_RELEASE_URL="https://github.com/nourddinak/DEPO/releases/latest/download/depo-agent-linux-${AGENT_ARCH}"
+  if curl -sSL -f -o "$INSTALL_BIN" "$GITHUB_RELEASE_URL" 2>/dev/null; then
     echo "Downloaded agent binary from GitHub release."
   elif [[ -f "./depo-agent" ]]; then
     cp ./depo-agent "$INSTALL_BIN"
+  else
+    echo "Pre-compiled agent binary not found. Compiling from source..."
+    BUILD_DIR=$(mktemp -d /tmp/depo-agent-build.XXXXXX)
+    if ! command -v git &>/dev/null; then
+      apt-get update -qq && apt-get install -y -qq git
+    fi
+    git clone --depth 1 "https://github.com/nourddinak/DEPO.git" "$BUILD_DIR"
+    if ! command -v go &>/dev/null; then
+      apt-get update -qq && apt-get install -y -qq golang-go || true
+      if ! command -v go &>/dev/null; then
+        GO_TARBALL_URL="https://go.dev/dl/go1.24.0.linux-${AGENT_ARCH}.tar.gz"
+        curl -sSL "$GO_TARBALL_URL" | tar -C /usr/local -xz
+        export PATH="/usr/local/go/bin:$PATH"
+      fi
+    fi
+    (cd "$BUILD_DIR" && CGO_ENABLED=0 go build -ldflags="-s -w" -o "$INSTALL_BIN" ./cmd/depo-agent)
+    rm -rf "$BUILD_DIR"
+    echo "Compiled and installed depo-agent binary."
   fi
 fi
 

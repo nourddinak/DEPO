@@ -6,8 +6,8 @@ set -euo pipefail
 # Completely removes the DEPO control plane binary, systemd service, and optionally data.
 #
 # Usage:
-#   curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall.sh | sudo bash
-#   curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall.sh | sudo bash -s -- --purge-data
+#   curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/uninstall.sh | sudo bash
+#   curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/uninstall.sh | sudo bash -s -- --purge-data
 # ==============================================================================
 
 SERVICE_NAME="depo"
