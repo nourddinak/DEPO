@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
@@ -132,3 +133,102 @@ func TestWebhookDeduplication(t *testing.T) {
 		t.Fatal("expected duplicate event to be rejected as not new")
 	}
 }
+
+func TestProjectDeployDirDefaultAndMigration(t *testing.T) {
+	database := setupTestDB(t)
+
+	// Create a test server first (foreign key requirement)
+	_, enrHash, _ := crypto.GenerateEnrollmentToken()
+	server, err := database.CreateServer("vps-test-deploydir", "192.168.1.101", "linux", enrHash)
+	if err != nil {
+		t.Fatalf("CreateServer failed: %v", err)
+	}
+
+	// 1. CreateProject normalization tests
+	testCases := []struct {
+		name      string
+		deployDir string
+		expected  string
+	}{
+		{"empty deploy dir", "", "/var/www/depo"},
+		{"legacy /var/www", "/var/www", "/var/www/depo"},
+		{"legacy /var/www/", "/var/www/", "/var/www/depo"},
+		{"whitespace string", "   ", "/var/www/depo"},
+		{"windows backslash", `\var\www`, "/var/www/depo"},
+		{"windows backslash trailing", `\var\www\`, "/var/www/depo"},
+		{"custom path preserved", "/opt/custom/app", "/opt/custom/app"},
+	}
+
+	for i, tc := range testCases {
+		proj := &Project{
+			Name:      fmt.Sprintf("test-proj-%d", i),
+			ServerID:  server.ID,
+			DeployDir: tc.deployDir,
+		}
+		if err := database.CreateProject(proj); err != nil {
+			t.Fatalf("CreateProject failed for %s: %v", tc.name, err)
+		}
+		fetched, err := database.GetProjectByID(proj.ID)
+		if err != nil {
+			t.Fatalf("GetProjectByID failed for %s: %v", tc.name, err)
+		}
+		if fetched.DeployDir != tc.expected {
+			t.Errorf("[%s] DeployDir = %q, expected %q", tc.name, fetched.DeployDir, tc.expected)
+		}
+	}
+
+	// 2. UpdateProject normalization tests
+	upProj := &Project{
+		Name:      "test-update-deploydir",
+		ServerID:  server.ID,
+		DeployDir: "/opt/initial/path",
+	}
+	if err := database.CreateProject(upProj); err != nil {
+		t.Fatalf("CreateProject failed: %v", err)
+	}
+	// Try updating to legacy /var/www -> should normalize to /var/www/depo
+	upProj.DeployDir = "/var/www"
+	if err := database.UpdateProject(upProj); err != nil {
+		t.Fatalf("UpdateProject failed: %v", err)
+	}
+	fetchedUp, _ := database.GetProjectByID(upProj.ID)
+	if fetchedUp.DeployDir != "/var/www/depo" {
+		t.Errorf("UpdateProject with /var/www yielded %q, expected /var/www/depo", fetchedUp.DeployDir)
+	}
+
+	// 3. Insert raw legacy projects with /var/www, /var/www/, empty, and backslashes to test Migration 2 behavior
+	legacyInserts := []struct {
+		id  string
+		dir string
+	}{
+		{"proj-mig-1", "/var/www"},
+		{"proj-mig-2", "/var/www/"},
+		{"proj-mig-3", ""},
+		{"proj-mig-4", `\var\www`},
+		{"proj-mig-5", `\var\www\`},
+	}
+	for _, l := range legacyInserts {
+		_, err = database.Exec(`INSERT INTO projects (id, name, server_id, deploy_dir) VALUES (?, ?, ?, ?)`,
+			l.id, l.id, server.ID, l.dir)
+		if err != nil {
+			t.Fatalf("raw insert %s failed: %v", l.id, err)
+		}
+	}
+
+	// Run migration 2 SQL directly from definition
+	_, err = database.Exec(migrations[1].sql)
+	if err != nil {
+		t.Fatalf("migration 2 execution failed: %v", err)
+	}
+
+	for _, l := range legacyInserts {
+		p, err := database.GetProjectByID(l.id)
+		if err != nil {
+			t.Fatalf("GetProjectByID(%s) failed: %v", l.id, err)
+		}
+		if p.DeployDir != "/var/www/depo" {
+			t.Errorf("project %s with original dir %q has DeployDir = %q, expected /var/www/depo", l.id, l.dir, p.DeployDir)
+		}
+	}
+}
+

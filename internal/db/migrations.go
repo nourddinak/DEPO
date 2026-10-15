@@ -86,7 +86,7 @@ var migrations = []migration{
 			build_cmd TEXT NOT NULL DEFAULT 'npm run build',
 			output_dir TEXT NOT NULL DEFAULT 'dist/',
 			server_id TEXT NOT NULL REFERENCES servers(id) ON DELETE RESTRICT,
-			deploy_dir TEXT NOT NULL DEFAULT '/var/www/',
+			deploy_dir TEXT NOT NULL DEFAULT '/var/www/depo',
 			run_user TEXT NOT NULL DEFAULT 'www-data',
 			caddyfile_path TEXT NOT NULL DEFAULT 'frontend/Caddyfile',
 			domain TEXT NOT NULL DEFAULT '',
@@ -221,6 +221,18 @@ var migrations = []migration{
 			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);
+		`,
+	},
+	{
+		version: 2,
+		name:    "update_default_deploy_dir_to_var_www_depo",
+		sql: `
+		UPDATE projects SET deploy_dir = '/var/www/depo' 
+		WHERE deploy_dir = '/var/www/' 
+		   OR deploy_dir = '/var/www' 
+		   OR deploy_dir = '' 
+		   OR deploy_dir = '\var\www' 
+		   OR deploy_dir = '\var\www\';
 		`,
 	},
 }

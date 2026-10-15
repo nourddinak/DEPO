@@ -14,7 +14,7 @@ DEPO is a modern, self-hosted, lightweight deployment platform and control plane
 
 - **Zero-Port Outbound Agents**: Target VPS edge servers run a lightweight Go daemon that long-polls the central control plane over secure HTTPS. No incoming firewall ports or SSH keys are ever opened to the internet.
 - **Single Unified Binary**: The central server compiles into a single static Go binary with the complete React 19 + TypeScript dashboard embedded (`embed.FS`). No external Node runtime or reverse proxy required on the control plane.
-- **Atomic Zero-Downtime Releases**: Deploys web bundles to `/var/www/<project>/releases/<release-id>` and executes an atomic same-filesystem symlink switch to `/var/www/<project>/current`.
+- **Atomic Zero-Downtime Releases**: Deploys web bundles to `/var/www/depo/<project>/releases/<release-id>` and executes an atomic same-filesystem symlink switch to `/var/www/depo/<project>/current`.
 - **Automated Caddy Management**: Idempotently generates and provisions reverse proxy blocks in `/etc/caddy/Caddyfile`, validates syntax with `caddy validate`, reloads via Caddy's dynamic runtime API, and restores backups automatically on failure.
 - **Dual-Mode CI/CD Authentication**: Supports both zero-secret GitHub Actions OIDC JWT claim verification and scoped bearer deploy tokens.
 - **Encrypted Secrets & Environment Variables**: Encrypts all environment variables at rest using AES-256-GCM with hardware-backed authenticated encryption.
@@ -62,7 +62,7 @@ DEPO is a modern, self-hosted, lightweight deployment platform and control plane
                                                      v
                                    +------------------------------------+
                                    |       Caddy Web Server             |
-                                   |  - Serves /var/www/<project>/curr  |
+                                   |  - Serves /var/www/depo/<app>/curr |
                                    |  - Automatic HTTPS / TLS (Let's    |
                                    |    Encrypt / ZeroSSL)              |
                                    +------------------------------------+
@@ -253,7 +253,7 @@ curl -sSL https://depo.example.com/uninstall-agent.sh | sudo bash
 # Or directly from the GitHub repository:
 curl -sSL https://raw.githubusercontent.com/nourddinak/DEPO/main/scripts/uninstall-agent.sh | sudo bash
 ```
-To also purge all deployed static website releases located in `/var/www`:
+To also purge all deployed static website releases located in `/var/www/depo`:
 ```bash
 curl -sSL https://depo.example.com/uninstall-agent.sh | sudo bash -s -- --purge-www
 ```

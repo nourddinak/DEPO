@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -404,10 +406,27 @@ func (d *DB) DeleteServer(id string) error {
 
 // --- Project Repository ---
 
+// NormalizeDeployDir normalizes deployment directory paths across DEPO.
+// It maps empty paths, whitespace, legacy "/var/www", and variations with trailing slashes
+// or Windows backslashes to the standard base directory "/var/www/depo".
+func NormalizeDeployDir(deployDir string) string {
+	deployDir = strings.TrimSpace(deployDir)
+	if deployDir == "" {
+		return "/var/www/depo"
+	}
+	slashPath := filepath.ToSlash(deployDir)
+	cleaned := strings.TrimRight(slashPath, "/")
+	if cleaned == "" || cleaned == "/var/www" || cleaned == "." {
+		return "/var/www/depo"
+	}
+	return cleaned
+}
+
 func (d *DB) CreateProject(p *Project) error {
 	if p.ID == "" {
 		p.ID = uuid.New().String()
 	}
+	p.DeployDir = NormalizeDeployDir(p.DeployDir)
 	now := time.Now().UTC()
 	p.CreatedAt = now
 	p.UpdatedAt = now
@@ -530,6 +549,7 @@ func (d *DB) ListProjects() ([]*Project, error) {
 }
 
 func (d *DB) UpdateProject(p *Project) error {
+	p.DeployDir = NormalizeDeployDir(p.DeployDir)
 	p.UpdatedAt = time.Now().UTC()
 	return d.Transact(func(tx *sql.Tx) error {
 		query := `UPDATE projects SET

@@ -69,10 +69,12 @@ fi
 
 # 2. Setup Directories & Permissions
 echo "[2/6] Configuring directories..."
-mkdir -p /etc/depo-agent /var/lib/depo-agent /var/www /etc/caddy
+mkdir -p /etc/depo-agent /var/lib/depo-agent /var/www/depo /etc/caddy
 chmod 750 /etc/depo-agent /var/lib/depo-agent
-chown -R root:www-data /var/www || true
-chmod -R 775 /var/www || true
+chmod 755 /var/www || true
+chown -R root:www-data /var/www/depo || true
+chmod -R 775 /var/www/depo || true
+chmod g+s /var/www/depo || true
 
 # 3. Download or install depo-agent binary
 echo "[3/6] Installing depo-agent binary..."

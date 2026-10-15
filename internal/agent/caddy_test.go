@@ -50,7 +50,7 @@ func TestCaddyTemplateRendering(t *testing.T) {
     file_server
 }
 `
-	err := cm.GenerateProjectCaddyfile(template, "myapp.example.com", "/var/www/my-app/current", destPath)
+	err := cm.GenerateProjectCaddyfile(template, "myapp.example.com", "/var/www/depo/my-app/current", destPath)
 	if err != nil {
 		t.Fatalf("GenerateProjectCaddyfile failed: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestCaddyTemplateRendering(t *testing.T) {
 	if !strings.Contains(rendered, "myapp.example.com {") {
 		t.Fatalf("Domain substitution failed: %s", rendered)
 	}
-	if !strings.Contains(rendered, "root * /var/www/my-app/current") {
+	if !strings.Contains(rendered, "root * /var/www/depo/my-app/current") {
 		t.Fatalf("Deploy dir substitution failed: %s", rendered)
 	}
 }

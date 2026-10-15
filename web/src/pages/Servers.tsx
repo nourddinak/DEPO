@@ -517,7 +517,7 @@ export const Servers: React.FC<ServersProps> = ({ servers = [], onRefresh }) => 
                 {/* With purge www */}
                 <div className="space-y-1.5">
                   <span className="font-semibold text-zinc-700 text-[11px]">
-                    Option B: Uninstall & Purge All Web Deploys (/var/www):
+                    Option B: Uninstall & Purge All Web Deploys (/var/www/depo):
                   </span>
                   <div className="relative">
                     <pre className="p-3 bg-zinc-950 border border-zinc-800 rounded-xl font-mono text-[11px] text-zinc-200 select-all overflow-x-auto whitespace-pre-wrap break-all">

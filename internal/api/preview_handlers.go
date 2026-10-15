@@ -38,9 +38,9 @@ func (s *Server) handleDestroyPreview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	project, _ := s.db.GetProjectByID(prev.ProjectID)
-	deployDir := "/var/www"
-	if project != nil && project.DeployDir != "" {
-		deployDir = project.DeployDir
+	deployDir := "/var/www/depo"
+	if project != nil {
+		deployDir = db.NormalizeDeployDir(project.DeployDir)
 	}
 
 	// Enqueue cleanup job for the destination agent

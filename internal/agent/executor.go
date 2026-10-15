@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -113,10 +114,7 @@ func (e *Executor) executeDeploy(jobID, leaseToken string, p *DeployPayload) err
 		domain = p.PreviewDomain
 	}
 
-	baseDir := p.DeployDir
-	if baseDir == "" {
-		baseDir = "/var/www"
-	}
+	baseDir := ResolveDeployBaseDir(p.DeployDir)
 	projectRoot := filepath.Join(baseDir, p.ProjectID)
 	releasesDir := filepath.Join(projectRoot, "releases")
 	targetReleaseDir := filepath.Join(releasesDir, p.ReleaseID)
@@ -250,10 +248,7 @@ func (e *Executor) executeRollback(jobID, leaseToken string, p *RollbackPayload)
 	lock.Lock()
 	defer lock.Unlock()
 
-	baseDir := p.DeployDir
-	if baseDir == "" {
-		baseDir = "/var/www"
-	}
+	baseDir := ResolveDeployBaseDir(p.DeployDir)
 	projectRoot := filepath.Join(baseDir, p.ProjectID)
 	targetReleaseDir := filepath.Join(projectRoot, "releases", p.ReleaseID)
 	currentSymlink := filepath.Join(projectRoot, "current")
@@ -311,10 +306,7 @@ func swapSymlink(tmpSymlink, currentSymlink string) error {
 }
 
 func (e *Executor) executeCleanupPreview(jobID, leaseToken string, p *CleanupPreviewPayload) error {
-	baseDir := p.DeployDir
-	if baseDir == "" {
-		baseDir = "/var/www"
-	}
+	baseDir := ResolveDeployBaseDir(p.DeployDir)
 	previewRoot := filepath.Join(baseDir, p.ProjectID, "previews", p.PreviewID)
 	previewCaddyConf := filepath.Join(previewRoot, "caddy.conf")
 
@@ -326,4 +318,19 @@ func (e *Executor) executeCleanupPreview(jobID, leaseToken string, p *CleanupPre
 	_ = os.RemoveAll(previewRoot)
 
 	return e.client.CompleteJob(jobID, leaseToken, "", "")
+}
+
+// ResolveDeployBaseDir normalizes the base deployment directory.
+// Defaults to "/var/www/depo" if empty, whitespace, or if legacy "/var/www" is provided.
+func ResolveDeployBaseDir(deployDir string) string {
+	deployDir = strings.TrimSpace(deployDir)
+	if deployDir == "" {
+		return "/var/www/depo"
+	}
+	slashPath := filepath.ToSlash(deployDir)
+	cleaned := strings.TrimRight(slashPath, "/")
+	if cleaned == "" || cleaned == "/var/www" || cleaned == "." {
+		return "/var/www/depo"
+	}
+	return cleaned
 }

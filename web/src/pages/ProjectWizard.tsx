@@ -157,7 +157,7 @@ export const ProjectWizard: React.FC<ProjectWizardProps> = ({ servers = [], onCr
               className="vercel-input font-mono text-sm"
             />
             <span className="text-[11px] text-zinc-400 mt-1 block">
-              Unique slug used for filesystem isolation (/var/www/&lt;project&gt;)
+              Unique slug used for filesystem isolation (/var/www/depo/&lt;project&gt;)
             </span>
           </div>
 

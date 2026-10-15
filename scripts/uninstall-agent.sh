@@ -88,15 +88,15 @@ if [[ -d "$DATA_DIR" ]]; then
   echo "Removed $DATA_DIR."
 fi
 
-# Optional: Cleanup web releases in /var/www if requested
+# Optional: Cleanup web releases in /var/www/depo if requested
 if [[ "$PURGE_WWW" == true ]]; then
-  echo "Purging /var/www static release directories..."
-  if [[ -d "/var/www" ]]; then
-    rm -rf /var/www/* || true
-    echo "Cleaned /var/www."
+  echo "Purging /var/www/depo static release directories..."
+  if [[ -d "/var/www/depo" ]]; then
+    rm -rf /var/www/depo/* /var/www/depo/.[!.]* /var/www/depo/..?* 2>/dev/null || true
+    echo "Cleaned /var/www/depo."
   fi
 else
-  echo "Notice: Static web releases in /var/www were preserved."
+  echo "Notice: Static web releases in /var/www/depo were preserved."
 fi
 
 echo "=========================================================="

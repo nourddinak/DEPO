@@ -147,9 +147,7 @@ func (s *Server) handleCreateProject(w http.ResponseWriter, r *http.Request) {
 	if req.OutputDir == "" {
 		req.OutputDir = "dist/"
 	}
-	if req.DeployDir == "" {
-		req.DeployDir = "/var/www"
-	}
+	req.DeployDir = db.NormalizeDeployDir(req.DeployDir)
 	if req.RunUser == "" {
 		req.RunUser = "www-data"
 	}
@@ -254,7 +252,7 @@ func (s *Server) handleUpdateProject(w http.ResponseWriter, r *http.Request) {
 		p.ServerID = req.ServerID
 	}
 	if req.DeployDir != "" {
-		p.DeployDir = req.DeployDir
+		p.DeployDir = db.NormalizeDeployDir(req.DeployDir)
 	}
 	p.AutoDeploy = req.AutoDeploy
 	p.PreviewEnabled = req.PreviewEnabled

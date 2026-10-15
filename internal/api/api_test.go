@@ -3,6 +3,8 @@ package api
 import (
 	"testing"
 	"time"
+
+	"depo/internal/db"
 )
 
 func TestRateLimiter(t *testing.T) {
@@ -74,3 +76,40 @@ PORT=3000
 		t.Fatalf("Unexpected item 1: %+v", items[1])
 	}
 }
+
+func TestProjectDeployDirResolution(t *testing.T) {
+	cases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"empty string defaults to /var/www/depo", "", "/var/www/depo"},
+		{"whitespace defaults to /var/www/depo", "   ", "/var/www/depo"},
+		{"legacy /var/www upgraded to /var/www/depo", "/var/www", "/var/www/depo"},
+		{"legacy /var/www/ trailing slash upgraded to /var/www/depo", "/var/www/", "/var/www/depo"},
+		{"multiple trailing slashes /var/www/// upgraded", "/var/www///", "/var/www/depo"},
+		{"windows backslash \\var\\www upgraded to /var/www/depo", `\var\www`, "/var/www/depo"},
+		{"windows backslash with trailing slash upgraded", `\var\www\`, "/var/www/depo"},
+		{"standard /var/www/depo preserved", "/var/www/depo", "/var/www/depo"},
+		{"trailing slash on /var/www/depo/ cleaned", "/var/www/depo/", "/var/www/depo"},
+		{"subpath under /var/www/depo preserved", "/var/www/depo/apps", "/var/www/depo/apps"},
+		{"custom path preserved and cleaned", "/opt/custom/path/", "/opt/custom/path"},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			actual := db.NormalizeDeployDir(c.input)
+			if actual != c.expected {
+				t.Errorf("NormalizeDeployDir(%q) = %q, expected %q", c.input, actual, c.expected)
+			}
+
+			// Verify CreateProjectRequest handling matches
+			req := CreateProjectRequest{DeployDir: c.input}
+			normalized := db.NormalizeDeployDir(req.DeployDir)
+			if normalized != c.expected {
+				t.Errorf("CreateProjectRequest normalized = %q, expected %q", normalized, c.expected)
+			}
+		})
+	}
+}
+
