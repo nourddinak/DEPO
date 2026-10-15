@@ -68,6 +68,9 @@ export const api = {
     body: JSON.stringify({ name, host }),
   }),
   deleteServer: (id: string) => fetchApi<{ message: string }>(`/api/v1/servers/${id}`, { method: 'DELETE' }),
+  resetServerEnrollToken: (id: string) => fetchApi<{ server: Server; enrollment_token: string; install_command: string }>(`/api/v1/servers/${id}/enroll-token`, {
+    method: 'POST',
+  }),
 
   // Projects
   getProjects: async () => (await fetchApi<Project[]>('/api/v1/projects')) || [],

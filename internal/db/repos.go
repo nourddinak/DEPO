@@ -321,6 +321,15 @@ func (d *DB) CompleteServerEnrollment(serverID, authTokenHash, agentVersion stri
 	})
 }
 
+func (d *DB) ResetServerEnrollmentToken(serverID, tokenHash string) error {
+	now := time.Now().UTC()
+	return d.Transact(func(tx *sql.Tx) error {
+		query := `UPDATE servers SET enrollment_token_hash = ?, status = 'pending', updated_at = ? WHERE id = ?`
+		_, err := tx.Exec(query, tokenHash, now, serverID)
+		return err
+	})
+}
+
 func (d *DB) UpdateServerHeartbeat(serverID string, cpuPct, ramPct, diskPct float64, diskFreeBytes int64) error {
 	now := time.Now().UTC()
 	return d.Transact(func(tx *sql.Tx) error {

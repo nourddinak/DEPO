@@ -14,6 +14,12 @@ var embeddedInstallAgentScript []byte
 //go:embed scripts/install.sh
 var embeddedInstallServerScript []byte
 
+//go:embed scripts/uninstall-agent.sh
+var embeddedUninstallAgentScript []byte
+
+//go:embed scripts/uninstall.sh
+var embeddedUninstallServerScript []byte
+
 func (s *Server) handleInstallAgentScript(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/x-shellscript; charset=utf-8")
 	// Check on-disk scripts first for live development overrides
@@ -35,6 +41,28 @@ func (s *Server) handleInstallServerScript(w http.ResponseWriter, r *http.Reques
 	}
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(embeddedInstallServerScript)
+}
+
+func (s *Server) handleUninstallAgentScript(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/x-shellscript; charset=utf-8")
+	if data, err := os.ReadFile("scripts/uninstall-agent.sh"); err == nil && len(data) > 0 {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(data)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(embeddedUninstallAgentScript)
+}
+
+func (s *Server) handleUninstallServerScript(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/x-shellscript; charset=utf-8")
+	if data, err := os.ReadFile("scripts/uninstall.sh"); err == nil && len(data) > 0 {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(data)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(embeddedUninstallServerScript)
 }
 
 func (s *Server) handleAgentDownload(w http.ResponseWriter, r *http.Request) {

@@ -230,6 +230,36 @@ DEPO natively supports on-demand preview environments for pull requests:
 
 ---
 
+## Uninstallation & Cleanup
+
+DEPO provides automated, clean uninstaller scripts for both the central control plane and edge agents:
+
+### 1. Uninstall Central Server
+To remove the DEPO control plane service and binary from your VPS:
+```bash
+curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall.sh | sudo bash
+```
+To also permanently delete all SQLite databases, encryption keys, and artifacts located in `/var/lib/depo`:
+```bash
+curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall.sh | sudo bash -s -- --purge-data
+```
+
+### 2. Uninstall VPS Edge Agent
+To completely remove the agent daemon, credentials, and systemd service from a target VPS:
+```bash
+# Served directly from your DEPO control plane:
+curl -sSL https://depo.example.com/uninstall-agent.sh | sudo bash
+
+# Or directly from the GitHub repository:
+curl -sSL https://raw.githubusercontent.com/depo-platform/depo/main/scripts/uninstall-agent.sh | sudo bash
+```
+To also purge all deployed static website releases located in `/var/www`:
+```bash
+curl -sSL https://depo.example.com/uninstall-agent.sh | sudo bash -s -- --purge-www
+```
+
+---
+
 ## CLI Options
 
 ### `depo` (Central Control Plane)

@@ -64,6 +64,8 @@ func (s *Server) Routes() http.Handler {
 	// --- Public Script & Agent Download Endpoints ---
 	mux.HandleFunc("GET /install-agent.sh", s.handleInstallAgentScript)
 	mux.HandleFunc("GET /install.sh", s.handleInstallServerScript)
+	mux.HandleFunc("GET /uninstall-agent.sh", s.handleUninstallAgentScript)
+	mux.HandleFunc("GET /uninstall.sh", s.handleUninstallServerScript)
 	mux.HandleFunc("GET /downloads/{name}", s.handleAgentDownload)
 
 	// --- Webhooks & Artifacts ---
@@ -96,6 +98,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("POST /api/v1/servers", RequireAuth(s.handleCreateServer))
 	mux.HandleFunc("GET /api/v1/servers/{id}", RequireAuth(s.handleGetServer))
 	mux.HandleFunc("DELETE /api/v1/servers/{id}", RequireAuth(s.handleDeleteServer))
+	mux.HandleFunc("POST /api/v1/servers/{id}/enroll-token", RequireAuth(s.handleResetServerEnrollToken))
 
 	// Projects
 	mux.HandleFunc("POST /api/v1/projects/detect", RequireAuth(s.handleDetectFramework))

@@ -83,6 +83,8 @@ jobs:
             dist_release/*
             scripts/install.sh
             scripts/install-agent.sh
+            scripts/uninstall.sh
+            scripts/uninstall-agent.sh
             docker-compose.yml
           generate_release_notes: true
           draft: false

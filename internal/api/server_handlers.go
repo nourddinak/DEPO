@@ -128,6 +128,39 @@ func (s *Server) handleDeleteServer(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Server deleted successfully"})
 }
 
+func (s *Server) handleResetServerEnrollToken(w http.ResponseWriter, r *http.Request) {
+	user, _ := GetUserFromContext(r.Context())
+	id := r.PathValue("id")
+
+	srv, err := s.db.GetServerByID(id)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "Server not found")
+		return
+	}
+
+	rawToken, tokenHash, err := crypto.GenerateEnrollmentToken()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to generate enrollment token")
+		return
+	}
+
+	if err := s.db.ResetServerEnrollmentToken(srv.ID, tokenHash); err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to reset server enrollment token")
+		return
+	}
+
+	_ = s.db.RecordAuditLog(user.ID, user.Email, "reset_server_token", "server", srv.ID, fmt.Sprintf(`{"name":"%s"}`, srv.Name), getClientIP(r))
+
+	installCmd := fmt.Sprintf("curl -sSL %s/install-agent.sh | sudo bash -s -- --server %s --token %s",
+		s.externalURL, s.externalURL, rawToken)
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"server":           srv,
+		"enrollment_token": rawToken,
+		"install_command":  installCmd,
+	})
+}
+
 // --- Agent-Facing Handlers ---
 
 func (s *Server) handleAgentEnroll(w http.ResponseWriter, r *http.Request) {
